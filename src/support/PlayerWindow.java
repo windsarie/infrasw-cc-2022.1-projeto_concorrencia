@@ -63,19 +63,23 @@ public class PlayerWindow {
      * @param scrubberMouseInputAdapter MouseInputAdapter for the Scrubber.
      */
     public PlayerWindow(
+
             String windowTitle,
+            ActionListener buttonListenerAddSong
+            ///////////////////////////////////////////////
+            /*
             String[][] queueArray,
             ActionListener buttonListenerPlayNow,
             ActionListener buttonListenerRemove,
-            ActionListener buttonListenerAddSong,
+
             ActionListener buttonListenerShuffle,
             ActionListener buttonListenerPrevious,
             ActionListener buttonListenerPlayPause,
             ActionListener buttonListenerStop,
             ActionListener buttonListenerNext,
             ActionListener buttonListenerLoop,
-            MouseInputAdapter scrubberMouseInputAdapter) {
-
+            MouseInputAdapter scrubberMouseInputAdapter */) {
+            ////////////////////////////////////////////////
         // Setting theme and typeface.
         try {
             UIManager.setLookAndFeel(new FlatLightLaf());
@@ -134,7 +138,7 @@ public class PlayerWindow {
 
         queuePanel.setLayout(new BorderLayout());
         queueListPane.setViewportView(queueList);
-        setQueueList(queueArray);
+        // setQueueList(queueArray);
         queuePanelButtons.setLayout(new BoxLayout(queuePanelButtons, BoxLayout.X_AXIS));
         queuePanelButtons.setBorder(BorderFactory.createEmptyBorder(5, 0, 0, 0));
         playNowButton = new JButton("Play Now");
@@ -150,9 +154,14 @@ public class PlayerWindow {
         queuePanel.add(queueListPane, BorderLayout.CENTER);
         queuePanel.add(queuePanelButtons, BorderLayout.PAGE_END);
 
+        ///////////////////////////////////////////////
+        /*
         playNowButton.addActionListener(buttonListenerPlayNow);
         removeSongButton.addActionListener(buttonListenerRemove);
+         */
+        ///////////////////////////////////////////////
         addSongButton.addActionListener(buttonListenerAddSong);
+
         //</editor-fold>
 
         //<editor-fold desc="Mini-player Panel">
@@ -234,7 +243,8 @@ public class PlayerWindow {
 
         miniPlayerPanel.add(miniPlayerInfoAndScrubber);
         miniPlayerPanel.add(miniPlayerButtons);
-
+        ///////////////////////////////////////////////////////////
+        /*
         miniPlayerShuffleButton.addActionListener(buttonListenerShuffle);
         miniPlayerPreviousButton.addActionListener(buttonListenerPrevious);
         miniPlayerPlayPauseButton.addActionListener(buttonListenerPlayPause);
@@ -243,6 +253,8 @@ public class PlayerWindow {
         miniPlayerLoopButton.addActionListener(buttonListenerLoop);
         miniPlayerScrubber.addMouseMotionListener(scrubberMouseInputAdapter);
         miniPlayerScrubber.addMouseListener(scrubberMouseInputAdapter);
+        */
+        ////////////////////////////////////////////////////////////
         //</editor-fold>
 
         window.setLayout(new BorderLayout());

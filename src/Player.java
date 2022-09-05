@@ -10,9 +10,10 @@ import javax.swing.event.MouseInputAdapter;
 import java.awt.*;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
+import java.io.IOException;
+import java.util.ArrayList; // adcionado
 
 public class Player {
-
     /**
      * The MPEG audio bitstream.
      */
@@ -28,17 +29,33 @@ public class Player {
 
     private PlayerWindow window;
 
+    private final ArrayList<Song> songToPlay = new ArrayList<>();
+
     private int currentFrame = 0;
 
-    private final ActionListener buttonListenerPlayNow = e -> ;
-    private final ActionListener buttonListenerRemove = e -> ;
-    private final ActionListener buttonListenerAddSong = e -> ;
-    private final ActionListener buttonListenerPlayPause = e -> ;
-    private final ActionListener buttonListenerStop = e -> ;
-    private final ActionListener buttonListenerNext = e -> ;
-    private final ActionListener buttonListenerPrevious = e -> ;
-    private final ActionListener buttonListenerShuffle = e -> ;
-    private final ActionListener buttonListenerLoop = e -> ;
+
+
+    private final ActionListener buttonListenerPlayNow = e -> {};
+    private final ActionListener buttonListenerRemove = e -> {};
+    private final ActionListener buttonListenerAddSong = e -> {
+        ////////////////////////////////////////////////
+        try {
+            Song newSong = window.openFileChooser();
+            songToPlay.add(newSong);
+            window.setQueueList(getDisplayInfo());
+
+        } catch (IOException | BitstreamException | UnsupportedTagException | InvalidDataException dq) {
+            System.out.println("Erro");
+        }
+        ////////////////////////////////////////////////
+
+    };
+    private final ActionListener buttonListenerPlayPause = e -> {};
+    private final ActionListener buttonListenerStop = e -> {};
+    private final ActionListener buttonListenerNext = e -> {};
+    private final ActionListener buttonListenerPrevious = e -> {};
+    private final ActionListener buttonListenerShuffle = e -> {};
+    private final ActionListener buttonListenerLoop = e -> {};
     private final MouseInputAdapter scrubberMouseInputAdapter = new MouseInputAdapter() {
         @Override
         public void mouseReleased(MouseEvent e) {
@@ -53,20 +70,26 @@ public class Player {
         }
     };
 
+    String windowTitle = "JPlayer";
+
     public Player() {
         EventQueue.invokeLater(() -> window = new PlayerWindow(
-                TITULO_DA_JANELA,
-                LISTA_DE_REPRODUÇÃO,
+                windowTitle,
+                buttonListenerAddSong
+                //////////////////////////////
+                /*
+                getDisplayInfo(),
                 buttonListenerPlayNow,
                 buttonListenerRemove,
-                buttonListenerAddSong,
                 buttonListenerShuffle,
                 buttonListenerPrevious,
                 buttonListenerPlayPause,
                 buttonListenerStop,
                 buttonListenerNext,
                 buttonListenerLoop,
-                scrubberMouseInputAdapter)
+                scrubberMouseInputAdapter */)
+                /////////////////////////////
+
         );
     }
 
@@ -115,4 +138,17 @@ public class Player {
         }
     }
     //</editor-fold>
+
+    ///////////////////////////////////////////////////////////
+    private String[][] getDisplayInfo() {
+        String[][] arrayAuxiliar = new String[songToPlay.size()][];
+
+        for (int i=0; i < songToPlay.size(); i++) {
+            arrayAuxiliar[i] = songToPlay.get(i).getDisplayInfo();
+        }
+
+        return arrayAuxiliar;
+    }
+    ///////////////////////////////////////////////////////////
+
 }
