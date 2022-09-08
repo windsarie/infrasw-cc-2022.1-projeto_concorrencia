@@ -10,8 +10,10 @@ import javax.swing.event.MouseInputAdapter;
 import java.awt.*;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList; // adcionado
+import java.util.concurrent.locks.ReentrantLock;
 
 public class Player {
     /**
@@ -26,29 +28,85 @@ public class Player {
      * The AudioDevice where audio samples are written to.
      */
     private AudioDevice device;
-
     private PlayerWindow window;
+    private Song currentSong;
+    private int currentFrame;
 
+    private int idmusicaatual;
     private final ArrayList<Song> songToPlay = new ArrayList<>();
+    private final ReentrantLock lock = new ReentrantLock();
+    private final ReentrantLock lock2 = new ReentrantLock();
+    private Thread threadPlayer;
 
-    private int currentFrame = 0;
+    Runnable playerRunnable = () -> {
+
+        try {
+            currentSong = songToPlay.get(idmusicaatual);
+            this.device = FactoryRegistry.systemRegistry().createAudioDevice();
+            this.device.open(this.decoder = new Decoder());
+            this.bitstream = new Bitstream(currentSong.getBufferedInputStream());
+
+            currentFrame = 0;
+
+            while (playNextFrame()) {
+                lock2.lock();
+                try {
+                    window.setTime(currentFrame * (int) currentSong.getMsPerFrame(), (int) currentSong.getMsLength());
+                    currentFrame++;
+                } finally {
+                    lock2.unlock();
+                }
+            }
+
+        } catch (JavaLayerException | FileNotFoundException e) {
+            e.printStackTrace();
+        }
+    };
+
+    private final ActionListener buttonListenerPlayNow = e -> {
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                lock.lock();
+                {
+                    try {
+                        String id = window.getSelectedSong();
+                        for (int i = 0; i < songToPlay.size(); i++){
+                            if (id.equals(songToPlay.get(i).getFilePath())) {
+
+                                idmusicaatual = i;
+                                threadPlayer = new Thread(playerRunnable);
+                                threadPlayer.start();
+                            }
+                        }
 
 
+                    } finally {
+                        lock.unlock();
+                    }
+                }
+            }
+        }).start();
 
-    private final ActionListener buttonListenerPlayNow = e -> {};
+    };
     private final ActionListener buttonListenerRemove = e -> {};
     private final ActionListener buttonListenerAddSong = e -> {
-        ////////////////////////////////////////////////
-        try {
-            Song newSong = window.openFileChooser();
-            songToPlay.add(newSong);
-            window.setQueueList(getDisplayInfo());
+        new Thread(new Runnable() {
+            public void run() {
+                try {
+                    lock.lock();
 
-        } catch (IOException | BitstreamException | UnsupportedTagException | InvalidDataException dq) {
-            System.out.println("Erro");
-        }
-        ////////////////////////////////////////////////
+                    Song newSong = window.openFileChooser();
+                    songToPlay.add(newSong);
+                    window.setQueueList(getDisplayInfo());
 
+                } catch (IOException | BitstreamException | UnsupportedTagException | InvalidDataException dq) {
+                    System.out.println("Erro");
+                } finally {
+                    lock.unlock();
+                }
+            }
+        }).start();
     };
     private final ActionListener buttonListenerPlayPause = e -> {};
     private final ActionListener buttonListenerStop = e -> {};
@@ -70,16 +128,17 @@ public class Player {
         }
     };
 
-    String windowTitle = "JPlayer";
+    String windowTitle = "yey";
 
     public Player() {
         EventQueue.invokeLater(() -> window = new PlayerWindow(
                 windowTitle,
+                getDisplayInfo(),
+                buttonListenerPlayNow,
                 buttonListenerAddSong
                 //////////////////////////////
                 /*
-                getDisplayInfo(),
-                buttonListenerPlayNow,
+
                 buttonListenerRemove,
                 buttonListenerShuffle,
                 buttonListenerPrevious,

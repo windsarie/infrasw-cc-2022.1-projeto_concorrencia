@@ -52,8 +52,10 @@ public class PlayerWindow {
      * @param windowTitle               String to be used as the window title.
      * @param queueArray                String[][] with the queue. The array should contain in each position one array
      * @param buttonListenerPlayNow     ActionListener for the "Play Now" button.
-     * @param buttonListenerRemove      ActionListener for the "Remove" button.
+      // buttonListenerRemove      ActionListener for the "Remove" button.
      * @param buttonListenerAddSong     ActionListener for the "Add Song" button.
+    */
+    /*
      * @param buttonListenerShuffle     ActionListener for the "Shuffle" button.
      * @param buttonListenerPrevious    ActionListener for the "Previous" button.
      * @param buttonListenerPlayPause   ActionListener for the "Play/Pause" button.
@@ -65,13 +67,12 @@ public class PlayerWindow {
     public PlayerWindow(
 
             String windowTitle,
+            String[][] queueArray,
+            ActionListener buttonListenerPlayNow,
             ActionListener buttonListenerAddSong
             ///////////////////////////////////////////////
             /*
-            String[][] queueArray,
-            ActionListener buttonListenerPlayNow,
             ActionListener buttonListenerRemove,
-
             ActionListener buttonListenerShuffle,
             ActionListener buttonListenerPrevious,
             ActionListener buttonListenerPlayPause,
@@ -138,7 +139,7 @@ public class PlayerWindow {
 
         queuePanel.setLayout(new BorderLayout());
         queueListPane.setViewportView(queueList);
-        // setQueueList(queueArray);
+        setQueueList(queueArray);
         queuePanelButtons.setLayout(new BoxLayout(queuePanelButtons, BoxLayout.X_AXIS));
         queuePanelButtons.setBorder(BorderFactory.createEmptyBorder(5, 0, 0, 0));
         playNowButton = new JButton("Play Now");
@@ -156,10 +157,10 @@ public class PlayerWindow {
 
         ///////////////////////////////////////////////
         /*
-        playNowButton.addActionListener(buttonListenerPlayNow);
         removeSongButton.addActionListener(buttonListenerRemove);
          */
         ///////////////////////////////////////////////
+        playNowButton.addActionListener(buttonListenerPlayNow);
         addSongButton.addActionListener(buttonListenerAddSong);
 
         //</editor-fold>
