@@ -52,7 +52,7 @@ public class PlayerWindow {
      * @param windowTitle               String to be used as the window title.
      * @param queueArray                String[][] with the queue. The array should contain in each position one array
      * @param buttonListenerPlayNow     ActionListener for the "Play Now" button.
-      // buttonListenerRemove      ActionListener for the "Remove" button.
+     * @param buttonListenerRemove      ActionListener for the "Remove" button.
      * @param buttonListenerAddSong     ActionListener for the "Add Song" button.
     */
     /*
@@ -69,10 +69,12 @@ public class PlayerWindow {
             String windowTitle,
             String[][] queueArray,
             ActionListener buttonListenerPlayNow,
+            ActionListener buttonListenerRemove,
             ActionListener buttonListenerAddSong
+
             ///////////////////////////////////////////////
             /*
-            ActionListener buttonListenerRemove,
+
             ActionListener buttonListenerShuffle,
             ActionListener buttonListenerPrevious,
             ActionListener buttonListenerPlayPause,
@@ -154,13 +156,8 @@ public class PlayerWindow {
         removeSongButton.setEnabled(false);
         queuePanel.add(queueListPane, BorderLayout.CENTER);
         queuePanel.add(queuePanelButtons, BorderLayout.PAGE_END);
-
-        ///////////////////////////////////////////////
-        /*
-        removeSongButton.addActionListener(buttonListenerRemove);
-         */
-        ///////////////////////////////////////////////
         playNowButton.addActionListener(buttonListenerPlayNow);
+        removeSongButton.addActionListener(buttonListenerRemove);
         addSongButton.addActionListener(buttonListenerAddSong);
 
         //</editor-fold>

@@ -31,8 +31,11 @@ public class Player {
     private PlayerWindow window;
     private Song currentSong;
     private int currentFrame;
-
     private int idmusicaatual;
+
+    private boolean stop = false;
+
+    private boolean playerpaused = true;
     private final ArrayList<Song> songToPlay = new ArrayList<>();
     private final ReentrantLock lock = new ReentrantLock();
     private final ReentrantLock lock2 = new ReentrantLock();
@@ -51,6 +54,8 @@ public class Player {
             while (playNextFrame()) {
                 lock2.lock();
                 try {
+                    
+                    window.setPlayingSongInfo(currentSong.getTitle(), currentSong.getAlbum(), currentSong.getArtist());
                     window.setTime(currentFrame * (int) currentSong.getMsPerFrame(), (int) currentSong.getMsLength());
                     currentFrame++;
                 } finally {
@@ -70,17 +75,15 @@ public class Player {
                 lock.lock();
                 {
                     try {
+
                         String id = window.getSelectedSong();
                         for (int i = 0; i < songToPlay.size(); i++){
-                            if (id.equals(songToPlay.get(i).getFilePath())) {
-
+                            if (id.equals(songToPlay.get(i).getUuid())) {
                                 idmusicaatual = i;
                                 threadPlayer = new Thread(playerRunnable);
                                 threadPlayer.start();
                             }
                         }
-
-
                     } finally {
                         lock.unlock();
                     }
@@ -89,13 +92,34 @@ public class Player {
         }).start();
 
     };
-    private final ActionListener buttonListenerRemove = e -> {};
+    private final ActionListener buttonListenerRemove = e -> {
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    lock.lock();
+                    String id = window.getSelectedSong();
+                    // verificar se uma musica esta sendo tocada
+                    // se sim chamar função stop();
+                    for (int i = 0; i<songToPlay.size();i++) {
+                        if (id.equals(songToPlay.get(i).getUuid())){
+                            songToPlay.remove(i);
+                            break;
+                        }
+                    }
+
+                    window.setQueueList(getDisplayInfo());
+                } finally {
+                    lock.unlock();
+                }
+            }
+        }).start();
+    };
     private final ActionListener buttonListenerAddSong = e -> {
         new Thread(new Runnable() {
             public void run() {
                 try {
                     lock.lock();
-
                     Song newSong = window.openFileChooser();
                     songToPlay.add(newSong);
                     window.setQueueList(getDisplayInfo());
@@ -135,11 +159,10 @@ public class Player {
                 windowTitle,
                 getDisplayInfo(),
                 buttonListenerPlayNow,
+                buttonListenerRemove,
                 buttonListenerAddSong
                 //////////////////////////////
                 /*
-
-                buttonListenerRemove,
                 buttonListenerShuffle,
                 buttonListenerPrevious,
                 buttonListenerPlayPause,
@@ -196,9 +219,9 @@ public class Player {
             while (framesToSkip-- > 0 && condition) condition = skipNextFrame();
         }
     }
-    //</editor-fold>
 
-    ///////////////////////////////////////////////////////////
+
+
     private String[][] getDisplayInfo() {
         String[][] arrayAuxiliar = new String[songToPlay.size()][];
 
@@ -208,6 +231,11 @@ public class Player {
 
         return arrayAuxiliar;
     }
-    ///////////////////////////////////////////////////////////
 
+
+    private void await() {
+        playerpaused = true;
+        window.setPlayPauseButtonIcon(playerpaused);
+    }
+    //</editor-fold>
 }
