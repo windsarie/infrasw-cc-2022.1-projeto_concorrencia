@@ -13,6 +13,7 @@ import java.awt.event.MouseEvent;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList; // adcionado
+import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;
 
 public class Player {
@@ -33,12 +34,11 @@ public class Player {
     private int currentFrame;
     private int idmusicaatual;
 
-    private boolean stop = false;
-
-    private boolean playerpaused = true;
+    private int playerpaused = 1;
     private final ArrayList<Song> songToPlay = new ArrayList<>();
     private final ReentrantLock lock = new ReentrantLock();
     private final ReentrantLock lock2 = new ReentrantLock();
+    private final Condition lockCondition = lock.newCondition();
     private Thread threadPlayer;
 
     Runnable playerRunnable = () -> {
@@ -49,20 +49,25 @@ public class Player {
             this.device.open(this.decoder = new Decoder());
             this.bitstream = new Bitstream(currentSong.getBufferedInputStream());
 
+            playerpaused = 0;
             currentFrame = 0;
 
             while (playNextFrame()) {
                 lock2.lock();
                 try {
-                    
+                    if (playerpaused == 1) {
+                        lockCondition.await();// precisa ser usado em um bloco sincronizado para funcionar
+                    }
                     window.setPlayingSongInfo(currentSong.getTitle(), currentSong.getAlbum(), currentSong.getArtist());
                     window.setTime(currentFrame * (int) currentSong.getMsPerFrame(), (int) currentSong.getMsLength());
                     currentFrame++;
+
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
                 } finally {
                     lock2.unlock();
                 }
             }
-
         } catch (JavaLayerException | FileNotFoundException e) {
             e.printStackTrace();
         }
@@ -75,12 +80,17 @@ public class Player {
                 lock.lock();
                 {
                     try {
-
                         String id = window.getSelectedSong();
                         for (int i = 0; i < songToPlay.size(); i++){
                             if (id.equals(songToPlay.get(i).getUuid())) {
                                 idmusicaatual = i;
                                 threadPlayer = new Thread(playerRunnable);
+
+                                playerpaused = 0;
+
+                                window.setEnabledPlayPauseButton(true);
+                                window.setPlayPauseButtonIcon(playerpaused);
+
                                 threadPlayer.start();
                             }
                         }
@@ -103,6 +113,11 @@ public class Player {
                     // se sim chamar função stop();
                     for (int i = 0; i<songToPlay.size();i++) {
                         if (id.equals(songToPlay.get(i).getUuid())){
+                            /*
+                            if (i == idmusicaatual){
+                                stop();
+                            }
+                            */
                             songToPlay.remove(i);
                             break;
                         }
@@ -132,7 +147,22 @@ public class Player {
             }
         }).start();
     };
-    private final ActionListener buttonListenerPlayPause = e -> {};
+    private final ActionListener buttonListenerPlayPause = e -> {
+        System.out.println(playerpaused);
+        if (playerpaused == 1) {
+            playerpaused = 0;
+            lock2.lock();
+            try {
+                lockCondition.signalAll(); // precisa ser usado em um bloco sincronizado para funcionar
+            } finally {
+                lock2.unlock();
+            }
+            window.setPlayPauseButtonIcon(playerpaused);
+        } else {
+            playerpaused = 1;
+            window.setPlayPauseButtonIcon(playerpaused);
+        }
+    };
     private final ActionListener buttonListenerStop = e -> {};
     private final ActionListener buttonListenerNext = e -> {};
     private final ActionListener buttonListenerPrevious = e -> {};
@@ -160,12 +190,12 @@ public class Player {
                 getDisplayInfo(),
                 buttonListenerPlayNow,
                 buttonListenerRemove,
-                buttonListenerAddSong
+                buttonListenerAddSong,
+                buttonListenerPlayPause
                 //////////////////////////////
                 /*
                 buttonListenerShuffle,
                 buttonListenerPrevious,
-                buttonListenerPlayPause,
                 buttonListenerStop,
                 buttonListenerNext,
                 buttonListenerLoop,
@@ -220,8 +250,6 @@ public class Player {
         }
     }
 
-
-
     private String[][] getDisplayInfo() {
         String[][] arrayAuxiliar = new String[songToPlay.size()][];
 
@@ -230,12 +258,6 @@ public class Player {
         }
 
         return arrayAuxiliar;
-    }
-
-
-    private void await() {
-        playerpaused = true;
-        window.setPlayPauseButtonIcon(playerpaused);
     }
     //</editor-fold>
 }

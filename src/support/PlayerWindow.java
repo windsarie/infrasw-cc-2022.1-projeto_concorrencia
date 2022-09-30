@@ -54,11 +54,11 @@ public class PlayerWindow {
      * @param buttonListenerPlayNow     ActionListener for the "Play Now" button.
      * @param buttonListenerRemove      ActionListener for the "Remove" button.
      * @param buttonListenerAddSong     ActionListener for the "Add Song" button.
-    */
+     * @param buttonListenerPlayPause   ActionListener for the "Play/Pause" button.
+     */
     /*
      * @param buttonListenerShuffle     ActionListener for the "Shuffle" button.
      * @param buttonListenerPrevious    ActionListener for the "Previous" button.
-     * @param buttonListenerPlayPause   ActionListener for the "Play/Pause" button.
      * @param buttonListenerStop        ActionListener for the "Stop" button.
      * @param buttonListenerNext        ActionListener for the "Next" button.
      * @param buttonListenerLoop      ActionListener for the "Loop" button.
@@ -70,14 +70,12 @@ public class PlayerWindow {
             String[][] queueArray,
             ActionListener buttonListenerPlayNow,
             ActionListener buttonListenerRemove,
-            ActionListener buttonListenerAddSong
-
+            ActionListener buttonListenerAddSong,
+            ActionListener buttonListenerPlayPause
             ///////////////////////////////////////////////
             /*
-
             ActionListener buttonListenerShuffle,
             ActionListener buttonListenerPrevious,
-            ActionListener buttonListenerPlayPause,
             ActionListener buttonListenerStop,
             ActionListener buttonListenerNext,
             ActionListener buttonListenerLoop,
@@ -159,7 +157,6 @@ public class PlayerWindow {
         playNowButton.addActionListener(buttonListenerPlayNow);
         removeSongButton.addActionListener(buttonListenerRemove);
         addSongButton.addActionListener(buttonListenerAddSong);
-
         //</editor-fold>
 
         //<editor-fold desc="Mini-player Panel">
@@ -241,18 +238,19 @@ public class PlayerWindow {
 
         miniPlayerPanel.add(miniPlayerInfoAndScrubber);
         miniPlayerPanel.add(miniPlayerButtons);
-        ///////////////////////////////////////////////////////////
+
+        miniPlayerPlayPauseButton.addActionListener(buttonListenerPlayPause);
+
         /*
         miniPlayerShuffleButton.addActionListener(buttonListenerShuffle);
         miniPlayerPreviousButton.addActionListener(buttonListenerPrevious);
-        miniPlayerPlayPauseButton.addActionListener(buttonListenerPlayPause);
         miniPlayerStopButton.addActionListener(buttonListenerStop);
         miniPlayerNextButton.addActionListener(buttonListenerNext);
         miniPlayerLoopButton.addActionListener(buttonListenerLoop);
         miniPlayerScrubber.addMouseMotionListener(scrubberMouseInputAdapter);
         miniPlayerScrubber.addMouseListener(scrubberMouseInputAdapter);
         */
-        ////////////////////////////////////////////////////////////
+
         //</editor-fold>
 
         window.setLayout(new BorderLayout());
