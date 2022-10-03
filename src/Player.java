@@ -12,7 +12,7 @@ import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.util.ArrayList; // adcionado
+import java.util.ArrayList;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -38,7 +38,7 @@ public class Player {
     private final ArrayList<Song> songToPlay = new ArrayList<>();
     private final ReentrantLock lock = new ReentrantLock();
     private final ReentrantLock lock2 = new ReentrantLock();
-    private final Condition lockCondition = lock.newCondition();
+    private final Condition lockCondition = lock2.newCondition();
     private Thread threadPlayer;
 
     Runnable playerRunnable = () -> {
@@ -56,7 +56,7 @@ public class Player {
                 lock2.lock();
                 try {
                     if (playerpaused == 1) {
-                        lockCondition.await();// precisa ser usado em um bloco sincronizado para funcionar
+                        lockCondition.await();
                     }
                     window.setPlayingSongInfo(currentSong.getTitle(), currentSong.getAlbum(), currentSong.getArtist());
                     window.setTime(currentFrame * (int) currentSong.getMsPerFrame(), (int) currentSong.getMsLength());
@@ -153,7 +153,7 @@ public class Player {
             playerpaused = 0;
             lock2.lock();
             try {
-                lockCondition.signalAll(); // precisa ser usado em um bloco sincronizado para funcionar
+                lockCondition.signalAll();
             } finally {
                 lock2.unlock();
             }
