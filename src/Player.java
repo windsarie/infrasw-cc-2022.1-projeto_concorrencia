@@ -33,41 +33,64 @@ public class Player {
     private Song currentSong;
     private int currentFrame;
     private int idmusicaatual;
-
     private int playerpaused = 1;
+    private boolean next = false;
+    private boolean previous = false;
+    private boolean Parar = false;
     private final ArrayList<Song> songToPlay = new ArrayList<>();
     private final ReentrantLock lock = new ReentrantLock();
     private final ReentrantLock lock2 = new ReentrantLock();
     private final Condition lockCondition = lock2.newCondition();
     private Thread threadPlayer;
-
     Runnable playerRunnable = () -> {
-
         try {
-            currentSong = songToPlay.get(idmusicaatual);
-            this.device = FactoryRegistry.systemRegistry().createAudioDevice();
-            this.device.open(this.decoder = new Decoder());
-            this.bitstream = new Bitstream(currentSong.getBufferedInputStream());
+            window.setEnabledStopButton(true);
+            while (idmusicaatual < songToPlay.size()) {
+                window.setEnabledNextButton(idmusicaatual == songToPlay.size() - 1);
+                window.setEnabledPreviousButton(idmusicaatual != 0);
 
-            playerpaused = 0;
-            currentFrame = 0;
+                currentSong = songToPlay.get(idmusicaatual);
+                this.device = FactoryRegistry.systemRegistry().createAudioDevice();
+                this.device.open(this.decoder = new Decoder());
+                this.bitstream = new Bitstream(currentSong.getBufferedInputStream());
 
-            while (playNextFrame()) {
-                lock2.lock();
-                try {
-                    if (playerpaused == 1) {
-                        lockCondition.await();
+                playerpaused = 0;
+                currentFrame = 0;
+
+                while (playNextFrame()) {
+                    lock2.lock();
+                    try {
+                        if (Parar) {
+                            Parar = false;
+                            window.resetMiniPlayer();
+                            threadPlayer.stop();
+                        }
+                        if (playerpaused == 1) {
+                            lockCondition.await();
+                        }
+                        window.setPlayingSongInfo(currentSong.getTitle(), currentSong.getAlbum(), currentSong.getArtist());
+                        window.setTime(currentFrame * (int) currentSong.getMsPerFrame(), (int) currentSong.getMsLength());
+                        currentFrame++;
+                        if(next) {
+                            next = false;
+                            idmusicaatual++;
+                            break;
+                        }
+                        if(previous) {
+                            previous = false;
+                            idmusicaatual--;
+                            break;
+                        }
+
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    } finally {
+                        lock2.unlock();
                     }
-                    window.setPlayingSongInfo(currentSong.getTitle(), currentSong.getAlbum(), currentSong.getArtist());
-                    window.setTime(currentFrame * (int) currentSong.getMsPerFrame(), (int) currentSong.getMsLength());
-                    currentFrame++;
-
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                } finally {
-                    lock2.unlock();
                 }
+                idmusicaatual++;
             }
+            window.resetMiniPlayer();
         } catch (JavaLayerException | FileNotFoundException e) {
             e.printStackTrace();
         }
@@ -109,15 +132,11 @@ public class Player {
                 try {
                     lock.lock();
                     String id = window.getSelectedSong();
-                    // verificar se uma musica esta sendo tocada
-                    // se sim chamar função stop();
                     for (int i = 0; i<songToPlay.size();i++) {
                         if (id.equals(songToPlay.get(i).getUuid())){
-                            /*
-                            if (i == idmusicaatual){
-                                stop();
+                            if (idmusicaatual == i) {
+                                Parar = true;
                             }
-                            */
                             songToPlay.remove(i);
                             break;
                         }
@@ -163,9 +182,15 @@ public class Player {
             window.setPlayPauseButtonIcon(playerpaused);
         }
     };
-    private final ActionListener buttonListenerStop = e -> {};
-    private final ActionListener buttonListenerNext = e -> {};
-    private final ActionListener buttonListenerPrevious = e -> {};
+    private final ActionListener buttonListenerStop = e -> {
+        Parar = true;
+    };
+    private final ActionListener buttonListenerNext = e -> {
+        next = true;
+    };
+    private final ActionListener buttonListenerPrevious = e -> {
+        previous = true;
+    };
     private final ActionListener buttonListenerShuffle = e -> {};
     private final ActionListener buttonListenerLoop = e -> {};
     private final MouseInputAdapter scrubberMouseInputAdapter = new MouseInputAdapter() {
@@ -191,17 +216,17 @@ public class Player {
                 buttonListenerPlayNow,
                 buttonListenerRemove,
                 buttonListenerAddSong,
-                buttonListenerPlayPause
-                //////////////////////////////
-                /*
-                buttonListenerShuffle,
-                buttonListenerPrevious,
+                buttonListenerPlayPause,
                 buttonListenerStop,
                 buttonListenerNext,
+                buttonListenerPrevious
+                /*
+                buttonListenerShuffle,
+
+                
+
                 buttonListenerLoop,
                 scrubberMouseInputAdapter */)
-                /////////////////////////////
-
         );
     }
 

@@ -71,13 +71,13 @@ public class PlayerWindow {
             ActionListener buttonListenerPlayNow,
             ActionListener buttonListenerRemove,
             ActionListener buttonListenerAddSong,
-            ActionListener buttonListenerPlayPause
+            ActionListener buttonListenerPlayPause,
+            ActionListener buttonListenerStop,
+            ActionListener buttonListenerNext,
+            ActionListener buttonListenerPrevious
             ///////////////////////////////////////////////
             /*
             ActionListener buttonListenerShuffle,
-            ActionListener buttonListenerPrevious,
-            ActionListener buttonListenerStop,
-            ActionListener buttonListenerNext,
             ActionListener buttonListenerLoop,
             MouseInputAdapter scrubberMouseInputAdapter */) {
             ////////////////////////////////////////////////
@@ -240,12 +240,14 @@ public class PlayerWindow {
         miniPlayerPanel.add(miniPlayerButtons);
 
         miniPlayerPlayPauseButton.addActionListener(buttonListenerPlayPause);
-
-        /*
-        miniPlayerShuffleButton.addActionListener(buttonListenerShuffle);
-        miniPlayerPreviousButton.addActionListener(buttonListenerPrevious);
         miniPlayerStopButton.addActionListener(buttonListenerStop);
         miniPlayerNextButton.addActionListener(buttonListenerNext);
+        miniPlayerPreviousButton.addActionListener(buttonListenerPrevious);
+        /*
+        miniPlayerShuffleButton.addActionListener(buttonListenerShuffle);
+
+
+
         miniPlayerLoopButton.addActionListener(buttonListenerLoop);
         miniPlayerScrubber.addMouseMotionListener(scrubberMouseInputAdapter);
         miniPlayerScrubber.addMouseListener(scrubberMouseInputAdapter);
