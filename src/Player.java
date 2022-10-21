@@ -34,6 +34,7 @@ public class Player {
     private int currentFrame;
     private int idmusicaatual;
     private int playerpaused = 1;
+    private int novoframe;
     private boolean next = false;
     private boolean previous = false;
     private boolean Parar = false;
@@ -45,6 +46,7 @@ public class Player {
     Runnable playerRunnable = () -> {
         try {
             window.setEnabledStopButton(true);
+            window.setEnabledScrubber(true);
             while (idmusicaatual < songToPlay.size()) {
                 window.setEnabledNextButton(idmusicaatual == songToPlay.size() - 1);
                 window.setEnabledPreviousButton(idmusicaatual != 0);
@@ -196,14 +198,33 @@ public class Player {
     private final MouseInputAdapter scrubberMouseInputAdapter = new MouseInputAdapter() {
         @Override
         public void mouseReleased(MouseEvent e) {
+            try {
+                if (novoframe < currentFrame) {
+                    bitstream.close();
+                    device = FactoryRegistry.systemRegistry().createAudioDevice();
+                    device.open(decoder = new Decoder());
+                    bitstream = new Bitstream(currentSong.getBufferedInputStream());
+                    currentFrame = 0;
+                }
+                skipToFrame(novoframe);
+            } catch (FileNotFoundException | JavaLayerException ex) {
+                throw new RuntimeException(ex);
+            }
+            playerpaused = 1;
         }
 
         @Override
         public void mousePressed(MouseEvent e) {
+            playerpaused = 0;
+            novoframe = (window.getScrubberValue()/(int)currentSong.getMsPerFrame());
+            window.setTime(currentFrame * (int) currentSong.getMsPerFrame(), (int) currentSong.getMsLength());
         }
 
         @Override
         public void mouseDragged(MouseEvent e) {
+            playerpaused = 0;
+            novoframe = (window.getScrubberValue()/(int)currentSong.getMsPerFrame());
+            window.setTime(currentFrame * (int) currentSong.getMsPerFrame(), (int) currentSong.getMsLength());
         }
     };
 
@@ -219,14 +240,15 @@ public class Player {
                 buttonListenerPlayPause,
                 buttonListenerStop,
                 buttonListenerNext,
-                buttonListenerPrevious
+                buttonListenerPrevious,
+                scrubberMouseInputAdapter
                 /*
                 buttonListenerShuffle,
 
                 
 
                 buttonListenerLoop,
-                scrubberMouseInputAdapter */)
+                 */)
         );
     }
 

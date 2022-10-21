@@ -74,12 +74,13 @@ public class PlayerWindow {
             ActionListener buttonListenerPlayPause,
             ActionListener buttonListenerStop,
             ActionListener buttonListenerNext,
-            ActionListener buttonListenerPrevious
+            ActionListener buttonListenerPrevious,
+            MouseInputAdapter scrubberMouseInputAdapter
             ///////////////////////////////////////////////
             /*
             ActionListener buttonListenerShuffle,
             ActionListener buttonListenerLoop,
-            MouseInputAdapter scrubberMouseInputAdapter */) {
+             */) {
             ////////////////////////////////////////////////
         // Setting theme and typeface.
         try {
@@ -243,14 +244,12 @@ public class PlayerWindow {
         miniPlayerStopButton.addActionListener(buttonListenerStop);
         miniPlayerNextButton.addActionListener(buttonListenerNext);
         miniPlayerPreviousButton.addActionListener(buttonListenerPrevious);
-        /*
-        miniPlayerShuffleButton.addActionListener(buttonListenerShuffle);
-
-
-
-        miniPlayerLoopButton.addActionListener(buttonListenerLoop);
         miniPlayerScrubber.addMouseMotionListener(scrubberMouseInputAdapter);
         miniPlayerScrubber.addMouseListener(scrubberMouseInputAdapter);
+        /*
+        miniPlayerShuffleButton.addActionListener(buttonListenerShuffle);
+        miniPlayerLoopButton.addActionListener(buttonListenerLoop);
+
         */
 
         //</editor-fold>
