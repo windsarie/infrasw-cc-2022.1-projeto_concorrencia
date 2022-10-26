@@ -13,6 +13,9 @@ import java.awt.event.MouseEvent;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
+import  java.util.List;
+import java.util.Random;
+import java.util.Arrays;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -31,25 +34,36 @@ public class Player {
     private AudioDevice device;
     private PlayerWindow window;
     private Song currentSong;
+
     private int currentFrame;
     private int idmusicaatual;
     private int playerpaused = 1;
     private int novoframe;
+
     private boolean next = false;
+
     private boolean previous = false;
     private boolean Parar = false;
+    private boolean Loopativo = false;
+    private boolean shuffle_ativo = false;
+
     private final ArrayList<Song> songToPlay = new ArrayList<>();
+    private final List<Integer> list = new ArrayList<>();
+
     private final ReentrantLock lock = new ReentrantLock();
     private final ReentrantLock lock2 = new ReentrantLock();
     private final Condition lockCondition = lock2.newCondition();
     private Thread threadPlayer;
+
     Runnable playerRunnable = () -> {
         try {
             window.setEnabledStopButton(true);
             window.setEnabledScrubber(true);
+            window.setEnabledLoopButton(true);
+
             while (idmusicaatual < songToPlay.size()) {
-                window.setEnabledNextButton(idmusicaatual == songToPlay.size() - 1);
-                window.setEnabledPreviousButton(idmusicaatual != 0);
+                window.setEnabledNextButton(idmusicaatual != 0);
+                window.setEnabledPreviousButton(idmusicaatual == songToPlay.size() - 1);
 
                 currentSong = songToPlay.get(idmusicaatual);
                 this.device = FactoryRegistry.systemRegistry().createAudioDevice();
@@ -58,6 +72,8 @@ public class Player {
 
                 playerpaused = 0;
                 currentFrame = 0;
+
+                System.out.println(Loopativo);
 
                 while (playNextFrame()) {
                     lock2.lock();
@@ -84,13 +100,20 @@ public class Player {
                             break;
                         }
 
+
+
                     } catch (InterruptedException e) {
                         e.printStackTrace();
                     } finally {
                         lock2.unlock();
                     }
                 }
-                idmusicaatual++;
+
+                if ((Loopativo) && (idmusicaatual == songToPlay.size()-1)) {
+                    idmusicaatual = 0;
+                }else {
+                    idmusicaatual++;
+                }
             }
             window.resetMiniPlayer();
         } catch (JavaLayerException | FileNotFoundException e) {
@@ -138,6 +161,22 @@ public class Player {
                         if (id.equals(songToPlay.get(i).getUuid())){
                             if (idmusicaatual == i) {
                                 Parar = true;
+                            }
+
+                            for (int j = 0;j < songToPlay.size(); i++) {
+                                if(idmusicaatual == i) {
+                                    idmusicaatual -= 1;
+                                    next = true;
+                                    if(idmusicaatual == songToPlay.size() - 1){
+                                        Parar = true;
+                                    }
+                                }
+                                if(j < idmusicaatual){
+                                    idmusicaatual -= 1;
+                                    if (idmusicaatual == 0){
+                                        window.setEnabledPreviousButton(false);
+                                    }
+                                }
                             }
                             songToPlay.remove(i);
                             break;
@@ -193,12 +232,38 @@ public class Player {
     private final ActionListener buttonListenerPrevious = e -> {
         previous = true;
     };
-    private final ActionListener buttonListenerShuffle = e -> {};
-    private final ActionListener buttonListenerLoop = e -> {};
+    private final ActionListener buttonListenerShuffle = e -> {
+        if (songToPlay.size() > 1) {
+            window.setEnabledShuffleButton(true);
+
+            shuffle_ativo = true;
+
+            for (int inteiro = 0; inteiro < songToPlay.size(); inteiro++) {
+                list.add(inteiro);
+            }
+
+            Random random = new Random();
+            for (int x = list.size() - 1; x >= 1; x--) {
+                int z = random.nextInt(x + 1);
+
+                int obj = list.get(x);
+                list.set(x, list.get(z));
+                list.set(z, obj);
+            }
+        } else {
+            window.setEnabledShuffleButton(false);
+        }
+
+    };
+    private final ActionListener buttonListenerLoop = e -> {
+        Loopativo = !Loopativo;
+    };
+
     private final MouseInputAdapter scrubberMouseInputAdapter = new MouseInputAdapter() {
         @Override
         public void mouseReleased(MouseEvent e) {
             try {
+                window.setTime(novoframe * (int) currentSong.getMsPerFrame(), (int) currentSong.getMsLength());
                 if (novoframe < currentFrame) {
                     bitstream.close();
                     device = FactoryRegistry.systemRegistry().createAudioDevice();
@@ -217,14 +282,14 @@ public class Player {
         public void mousePressed(MouseEvent e) {
             playerpaused = 0;
             novoframe = (window.getScrubberValue()/(int)currentSong.getMsPerFrame());
-            window.setTime(currentFrame * (int) currentSong.getMsPerFrame(), (int) currentSong.getMsLength());
+            window.setTime(novoframe * (int) currentSong.getMsPerFrame(), (int) currentSong.getMsLength());
         }
 
         @Override
         public void mouseDragged(MouseEvent e) {
             playerpaused = 0;
             novoframe = (window.getScrubberValue()/(int)currentSong.getMsPerFrame());
-            window.setTime(currentFrame * (int) currentSong.getMsPerFrame(), (int) currentSong.getMsLength());
+            window.setTime(novoframe * (int) currentSong.getMsPerFrame(), (int) currentSong.getMsLength());
         }
     };
 
@@ -241,13 +306,10 @@ public class Player {
                 buttonListenerStop,
                 buttonListenerNext,
                 buttonListenerPrevious,
-                scrubberMouseInputAdapter
+                scrubberMouseInputAdapter,
+                buttonListenerLoop
                 /*
                 buttonListenerShuffle,
-
-                
-
-                buttonListenerLoop,
                  */)
         );
     }

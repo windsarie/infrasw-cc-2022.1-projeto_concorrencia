@@ -49,12 +49,13 @@ public class PlayerWindow {
     private final JToggleButton miniPlayerLoopButton;
 
     /**
-     * @param windowTitle               String to be used as the window title.
-     * @param queueArray                String[][] with the queue. The array should contain in each position one array
-     * @param buttonListenerPlayNow     ActionListener for the "Play Now" button.
-     * @param buttonListenerRemove      ActionListener for the "Remove" button.
-     * @param buttonListenerAddSong     ActionListener for the "Add Song" button.
-     * @param buttonListenerPlayPause   ActionListener for the "Play/Pause" button.
+     * @param windowTitle             String to be used as the window title.
+     * @param queueArray              String[][] with the queue. The array should contain in each position one array
+     * @param buttonListenerPlayNow   ActionListener for the "Play Now" button.
+     * @param buttonListenerRemove    ActionListener for the "Remove" button.
+     * @param buttonListenerAddSong   ActionListener for the "Add Song" button.
+     * @param buttonListenerPlayPause ActionListener for the "Play/Pause" button.
+     * @param buttonListenerLoop
      */
     /*
      * @param buttonListenerShuffle     ActionListener for the "Shuffle" button.
@@ -75,12 +76,12 @@ public class PlayerWindow {
             ActionListener buttonListenerStop,
             ActionListener buttonListenerNext,
             ActionListener buttonListenerPrevious,
-            MouseInputAdapter scrubberMouseInputAdapter
+            MouseInputAdapter scrubberMouseInputAdapter,
             ///////////////////////////////////////////////
             /*
             ActionListener buttonListenerShuffle,
             ActionListener buttonListenerLoop,
-             */) {
+             */ActionListener buttonListenerLoop) {
             ////////////////////////////////////////////////
         // Setting theme and typeface.
         try {
